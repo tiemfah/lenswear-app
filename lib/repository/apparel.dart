@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:lenswear_app/model/apparel.dart';
 import 'package:lenswear_app/model/prediction.dart';
 import 'package:lenswear_app/util/const.dart';
-import 'package:retry/retry.dart';
 
 class ApparelRepository {
   Future<List<Apparel>> getApparels({
@@ -43,15 +43,19 @@ class ApparelRepository {
   }
 
   Future<List<Apparel>> getApparelsByImage({required File image}) async {
-    List<int> imageBytes = image.readAsBytesSync();
-    String base64image = base64Encode(imageBytes);
+    http.MultipartRequest request = http.MultipartRequest(
+        'POST', Uri.parse('$modelServiceBaseURL/predict'));
 
-    final response = await retry(
-      () => http.post(Uri.parse('$modelServiceBaseURL/predict'), body: {
-        'image': base64image,
-      }).timeout(const Duration(seconds: 5)),
-      retryIf: (e) => e is SocketException || e is TimeoutException,
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'image',
+        image.path,
+        contentType: MediaType('application', 'jpeg'),
+      ),
     );
+
+    http.StreamedResponse r = await request.send();
+    final http.Response response = await http.Response.fromStream(r);
 
     if (response.statusCode == 200) {
       List<Apparel> result = [];
