@@ -11,7 +11,14 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-List<String> categories = ['shirt', 'pants', 'dress', 'shorts', 'skirt'];
+List<String> categories = [
+  'shirt',
+  'pants',
+  'dress',
+  'shorts',
+  'skirt',
+  'tshirt'
+];
 
 class _HomeScreenState extends State<HomeScreen> {
   final ApparelRepository _apparelRepository = ApparelRepository();
@@ -32,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
             for (var c in categories)
               FutureBuilder<List<Apparel>>(
                 future: _apparelRepository.getApparels(
-                    apparelTypeID: c, limit: 4, offset: 0),
+                    apparelTypeID: c, limit: 5, offset: 0),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     return ApparelSection(
